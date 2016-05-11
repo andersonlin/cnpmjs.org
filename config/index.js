@@ -22,7 +22,7 @@ var os = require('os');
 var version = require('../package.json').version;
 
 var root = path.dirname(__dirname);
-var dataDir = path.join(process.env.HOME || root, '.cnpmjs.org');
+var dataDir = process.env.CNPM_DATA_DIR || path.join(process.env.HOME || root, '.cnpmjs.org');
 
 var config = {
   version: version,
@@ -30,16 +30,16 @@ var config = {
   /**
    * Cluster mode
    */
-  enableCluster: false,
-  numCPUs: os.cpus().length,
+  enableCluster: process.env.CNPM_ENABLE_CLUSTER || false,
+  numCPUs: process.env.CNPM_NUMBER_CPUS || os.cpus().length,
 
   /*
    * server configure
    */
 
-  registryPort: 7001,
-  webPort: 7002,
-  bindingHost: '127.0.0.1', // only binding on 127.0.0.1 for local access
+  registryPort: process.env.CNPM_REGISTRY_PORT || 7001,
+  webPort: process.env.CNPM_WEB_PORT || 7002,
+  bindingHost: process.env.CNPM_BINDING_HOST || '127.0.0.1', // only binding on 127.0.0.1 for local access
 
   // debug mode
   // if in debug mode, some middleware like limit wont load
@@ -52,9 +52,9 @@ var config = {
   // max request json body size
   jsonLimit: '10mb',
   // log dir name
-  logdir: path.join(dataDir, 'logs'),
+  logdir: process.env.CNPM_LOG_DIR || path.join(dataDir, 'logs'),
   // update file template dir
-  uploadDir: path.join(dataDir, 'downloads'),
+  uploadDir: process.env.CNPM_DOWNLOAD_DIR || path.join(dataDir, 'downloads'),
   // web page viewCache
   viewCache: false,
 
@@ -73,27 +73,30 @@ var config = {
   enableCompress: false, // enable gzip response or not
 
   // default system admins
-  admins: {
-    // name: email
-    fengmk2: 'fengmk2@gmail.com',
-    admin: 'admin@cnpmjs.org',
-    dead_horse: 'dead_horse@qq.com',
-  },
+  // admins: {
+  //   // name: email
+  //   fengmk2: 'fengmk2@gmail.com',
+  //   admin: 'admin@cnpmjs.org',
+  //   dead_horse: 'dead_horse@qq.com',
+  // },
+  
+  // "{fengmk2: 'fengmk2@gmail.com',admin: 'admin@cnpmjs.org',dead_horse: 'dead_horse@qq.com',}"
+  admins: JSON.stringify(eval("({" + process.env.CNPM_ADMINS + "})")),
 
   // email notification for errors
   // check https://github.com/andris9/Nodemailer for more informations
   mail: {
-    enable: false,
-    appname: 'cnpmjs.org',
-    from: 'cnpmjs.org mail sender <adderss@gmail.com>',
-    service: 'gmail',
+    enable: process.env.CNPM_MAIL_ENABLE || false,
+    appname: process.env.CNPM_MAIL_APP_NAME || 'cnpmjs.org',
+    from: process.env.CNPM_MAIL_FROM || 'cnpmjs.org mail sender <address@gmail.com>',
+    service: process.env.CNPM_MAIL_SERVICE || 'QQex',
     auth: {
-      user: 'address@gmail.com',
-      pass: 'your password'
+      user: process.env.CNPM_MAIL_USER || 'address@gmail.com',
+      pass: process.env.CNPM_MAIL_PASSWORD || 'your password'
     }
   },
 
-  logoURL: 'https://os.alipayobjects.com/rmsportal/oygxuIUkkrRccUz.jpg', // cnpm logo image url
+  logoURL: process.env.CNPM_LOGO_URL || 'https://os.alipayobjects.com/rmsportal/oygxuIUkkrRccUz.jpg', // cnpm logo image url
   adBanner: '',
   customReadmeFile: '', // you can use your custom readme file instead the cnpm one
   customFooter: '', // you can add copyright and site total script html here
@@ -103,26 +106,26 @@ var config = {
   // max handle number of package.json `dependencies` property
   maxDependencies: 200,
   // backup filepath prefix
-  backupFilePrefix: '/cnpm/backup/',
+  backupFilePrefix: process.env.CNPM_BACKUP_DIR || path.join(dataDir, 'backup'),
 
   /**
    * database config
    */
 
   database: {
-    db: 'cnpmjs_test',
-    username: 'root',
-    password: '',
+    db: process.env.CNPM_DB_NAME || 'cnpmjs_test',
+    username: process.env.CNPM_DB_USERNAME || 'root',
+    password: process.env.CNPM_DB_PASSWORD || '',
 
     // the sql dialect of the database
     // - currently supported: 'mysql', 'sqlite', 'postgres', 'mariadb'
-    dialect: 'sqlite',
+    dialect: process.env.CNPM_DB_DIALECT || 'sqlite',
 
     // custom host; default: 127.0.0.1
-    host: '127.0.0.1',
+    host: process.env.CNPM_DB_HOST || '127.0.0.1',
 
     // custom port; default: 3306
-    port: 3306,
+    port: process.env.CNPM_DB_PORT || 3306,
 
     // use pooling in order to reduce db connection overload and to increase speed
     // currently only for mysql and postgresql (since v1.5.0)
@@ -156,10 +159,10 @@ var config = {
   // enable private mode or not
   // private mode: only admins can publish, other users just can sync package from source npm
   // public mode: all users can publish
-  enablePrivate: false,
+  enablePrivate: process.env.CNPM_ENABLE_PRIVATE || false,
 
   // registry scopes, if don't set, means do not support scopes
-  scopes: [ '@cnpm', '@cnpmtest', '@cnpm-test' ],
+  scopes: process.env.CNPM_SCOPES.split(',') || [ '@cnpm', '@cnpmtest', '@cnpm-test' ],
 
   // some registry already have some private packages in global scope
   // but we want to treat them as scoped private packages,
@@ -192,7 +195,7 @@ var config = {
   // none: do not sync any module, proxy all public modules from sourceNpmRegistry
   // exist: only sync exist modules
   // all: sync all modules
-  syncModel: 'none', // 'none', 'all', 'exist'
+  syncModel: process.env.CNPM_SYNC_MODEL || 'none', // 'none', 'all', 'exist'
 
   syncConcurrency: 1,
   // sync interval, default is 10 minutes
@@ -207,7 +210,7 @@ var config = {
   topPopular: 100,
 
   // sync devDependencies or not, default is false
-  syncDevDependencies: false,
+  syncDevDependencies: process.env.CNPM_SYNC_DEV_DEPENDENCIES || false,
 
   // badge subject on http://shields.io/
   badgePrefixURL: 'https://img.shields.io/badge',
@@ -218,11 +221,11 @@ var config = {
 
   // always-auth https://docs.npmjs.com/misc/config#always-auth
   // Force npm to always require authentication when accessing the registry, even for GET requests.
-  alwaysAuth: false,
+  alwaysAuth: process.env.CNPM_ALWAYS_AUTH || false,
 
   // if you're behind firewall, need to request through http proxy, please set this
   // e.g.: `httpProxy: 'http://proxy.mycompany.com:8080'`
-  httpProxy: null,
+  httpProxy: process.env.CNPM_HTTP_PROXY || null,
 };
 
 if (process.env.NODE_ENV !== 'test') {
