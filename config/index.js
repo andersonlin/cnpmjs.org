@@ -81,7 +81,7 @@ var config = {
   // },
   
   // "{fengmk2: 'fengmk2@gmail.com',admin: 'admin@cnpmjs.org',dead_horse: 'dead_horse@qq.com',}"
-  admins: JSON.stringify(eval("({" + process.env.CNPM_ADMINS + "})")),
+  admins: eval("({" + process.env.CNPM_ADMINS + "})"),
 
   // email notification for errors
   // check https://github.com/andris9/Nodemailer for more informations
